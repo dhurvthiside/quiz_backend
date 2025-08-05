@@ -21,11 +21,11 @@ const roomData = {};
 // 🔀 Utility to get 20 random questions
 const getRandomQuestions = (count = 20) => {
   const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, count).map((q, idx) => ({
-    id: idx + 1,
+  return shuffled.slice(0, count).map((q) => ({
+    id: q.id, // Use actual unique question ID
     question: q.question,
     options: q.options,
-    answer: q.correctAnswer, // use this for evaluation
+    answer: q.answer, 
   }));
 };
 
@@ -76,7 +76,15 @@ io.on('connection', (socket) => {
     // Prevent duplicate submission
     if (room.submissions.find((entry) => entry.name === name)) return;
 
-    const score = room.questions.filter((q) => answers[q.id] === q.answer).length;
+    // ✅ Fixed scoring logic
+    let score = 0;
+    room.questions.forEach((q) => {
+      const userAnswer = answers[q.id];
+      const correct = q.answer;
+      if (userAnswer && userAnswer === correct) {
+        score++;
+      }
+    });
 
     room.submissions.push({ name, score, time });
 
